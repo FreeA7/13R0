@@ -255,14 +255,22 @@ def getTarget(img, tl):
     ptdic['no-TFT-3'] = []
     ptsx['no-TFT-3'] = np.array([[tl[0], tl[1] + 94], [tl[0] + 7, tl[1] + 90],
                                  [tl[0] + 97, tl[1] + 90], [tl[0] + 106, tl[1] + 95],
-                                 [tl[0] + 137, tl[1] + 95], [tl[0] + 144, tl[1] + 102],
-                                 [tl[0] + 144, tl[1] + 126], [tl[0] + 152, tl[1] + 134],
-                                 [tl[0] + 255, tl[1] + 134], [tl[0] + 269, tl[1] + 145],
-                                 [tl[0] + 341, tl[1] + 145], [tl[0] + 350, tl[1] + 137],
-                                 [tl[0] + 350, tl[1] + 103], [tl[0] + 360, tl[1] + 92],
-                                 [tl[0] + 360, tl[1] + 166], [tl[0] + 190, tl[1] + 166],
-                                 [tl[0] + 190, tl[1] + 150], [tl[0] + 183, tl[1] + 143],
-                                 [tl[0] + 153, tl[1] + 143], [tl[0] + 145, tl[1] + 152],
+                                 [tl[0] + 137, tl[1] +
+                                     95], [tl[0] + 144, tl[1] + 102],
+                                 [tl[0] + 144, tl[1] +
+                                     126], [tl[0] + 152, tl[1] + 134],
+                                 [tl[0] + 255, tl[1] +
+                                     134], [tl[0] + 269, tl[1] + 145],
+                                 [tl[0] + 341, tl[1] +
+                                     145], [tl[0] + 350, tl[1] + 137],
+                                 [tl[0] + 350, tl[1] +
+                                     103], [tl[0] + 360, tl[1] + 92],
+                                 [tl[0] + 360, tl[1] +
+                                     166], [tl[0] + 190, tl[1] + 166],
+                                 [tl[0] + 190, tl[1] +
+                                     150], [tl[0] + 183, tl[1] + 143],
+                                 [tl[0] + 153, tl[1] +
+                                     143], [tl[0] + 145, tl[1] + 152],
                                  [tl[0] + 145, tl[1] + 173], [tl[0], tl[1] + 173]])
 
     # TFT-1
@@ -361,6 +369,22 @@ def getCoordinate(img, getimg=0, showimg=0, showparam=cv.WINDOW_AUTOSIZE):
         return [1, oimg]
 
 
+def getone(n, shape, hov):
+    if n < 0:
+        return 0
+    else:
+        if not hov:
+            if n > shape[1]:
+                return shape[1]
+            else:
+                return n
+        else:
+            if n > shape[0]:
+                return shape[0]
+            else:
+                return n
+
+
 def getOverlapping(ptss, target, shape):
     im1 = np.zeros(shape, dtype=np.uint8)
     for pts in ptss:
@@ -370,20 +394,46 @@ def getOverlapping(ptss, target, shape):
     target = cv.fillConvexPoly(im2, target, 1)
     # target = target // 255
 
-    start = datetime.datetime.now()
     img = im1 + target
-    end = datetime.datetime.now()
-    print('矩阵相加费时%fs:' % (((end - start).microseconds) / 1e6))
 
-    start = datetime.datetime.now()
     if (img > 1).any():
-        end = datetime.datetime.now()
-        print('求是否大于1费时%fs:' % (((end - start).microseconds) / 1e6))
         return 1
     else:
-        end = datetime.datetime.now()
-        print('求是否大于1费时%fs:' % (((end - start).microseconds) / 1e6))
         return 0
+
+
+def getMOverlapping(m, target, shape):
+    sum_m = 0
+
+    im1 = np.ones(shape[:2], dtype=np.uint8)
+
+    im2 = np.zeros(shape[:2], dtype=np.uint8)
+    target = cv.fillConvexPoly(im2, target, 1)
+
+    for p in m:
+        v1 = getone(p[0][1], shape, 1)
+        v2 = getone(p[2][1], shape, 1)
+        if v1 > v2:
+            vt = v1
+            v1 = v2
+            v2 = vt
+        h1 = getone(p[0][0], shape, 0)
+        h2 = getone(p[2][0], shape, 0)
+        if h1 > h2:
+            ht = h1
+            h1 = h2
+            h2 = ht
+
+        im = im1[v1:v2, h1:h2]
+
+        tr = target[v1:v2, h1:h2]
+
+        get = im + tr
+
+        if (get > 1).any():
+            sum_m += 1
+
+    return sum_m
 
 
 def getReturn(m1, m2, m):
@@ -409,35 +459,25 @@ def getQOut(ptdic, target, shape):
     sum_m2 = 0
     sum_m = 0
 
+    m1 = []
     for i in range(len(ptdic['Main'])):
-        m1 = []
         for key in ['no-TFT-1', 'no-TFT-2', 'no-TFT-3']:
             m1.append(ptdic[key][i])
-    start = datetime.datetime.now()
     if getOverlapping(m1, target, shape):
         sum_m1 += 1
-    end = datetime.datetime.now()
-    print('求重叠共费时%fs:' % (((end - start).microseconds) / 1e6))
 
+    m2 = []
     for i in range(len(ptdic['Main'])):
-        m2 = []
         for key in ['TFT-1', 'TFT-2']:
             m2.append(ptdic[key][i])
-    start = datetime.datetime.now()
     if getOverlapping(m2, target, shape):
         sum_m2 += 1
-    end = datetime.datetime.now()
-    print('求重叠共费时%fs:' % (((end - start).microseconds) / 1e6))
 
+    m = []
     for i in range(len(ptdic['Main'])):
-        m = []
         for key in ['Main']:
             m.append(ptdic[key][i])
-        start = datetime.datetime.now()
-        if getOverlapping(m, target, shape):
-            sum_m += 1
-        end = datetime.datetime.now()
-        print('求重叠共费时%fs:' % (((end - start).microseconds) / 1e6))
+    sum_m = getMOverlapping(m, target, shape)
 
     return getReturn(sum_m1, sum_m2, sum_m)
 
@@ -481,18 +521,22 @@ def getJPG(path, li=0):
 
 
 # -------------------------- 输出单个重叠情况的测试 --------------------------
-# img = './testp/432x576/TPDS0_5300_TA8B2553AA_TAAOL8C0_7_917.649_-1056.08__S_20181201_070454.jpg'
+# img = './testp/TGGS0_1300_TH8B0119AF_1351.031_759.164_1_10X_38_20181118202945.jpg'
 # img = cv.imread(img)
 # shape = img.shape
+
 # start = datetime.datetime.now()
-# dic = getCoordinate(img, showimg=1)
-
-# target = np.array([[0, 0], [0, 10], [10, 10], [10, 0]])
-
+# start1 = datetime.datetime.now()
+# dic = getCoordinate(img, showimg=0, getimg=0)
+# end1 = datetime.datetime.now()
+# print('得到多边形费时%fs:' % ((end1 - start1).seconds + (((end1 - start1).microseconds) / 1e6)))
+# target = np.array([[0, 0], [0, 1000], [1000, 1000], [1000, 0]])
+# start2 = datetime.datetime.now()
 # re = getQOut(dic, target, shape)
-
+# end2 = datetime.datetime.now()
+# print('比较重叠费时%fs:' % ((end2 - start2).seconds + (((end2 - start2).microseconds) / 1e6)))
 # end = datetime.datetime.now()
-# print('单次比较费时%fs:' % (((end - start).microseconds) / 1e6))
+# print('单次比较费时%fs:' % ((end - start).seconds + (((end - start).microseconds) / 1e6)))
 # print(re)
 
 # cv.waitKey(0)
@@ -505,13 +549,29 @@ s = 0
 
 for img in getJPG('./testp/'):
     s += 1
-    dic = getCoordinate(cv.imread(img), showimg=0, getimg=0)
+
+    start3 = datetime.datetime.now()
+
     img = cv.imread(img)
     shape = img.shape
+
+    start1 = datetime.datetime.now()
+    dic = getCoordinate(img, showimg=0, getimg=0)
+    end1 = datetime.datetime.now()
+    print('得到多边形费时%fs:' % ((end1 - start1).seconds + (((end1 - start1).microseconds) / 1e6)))
+
     if not dic:
         continue
-    target = np.array([[0, 0], [0, 100], [100, 100], [100, 0]])
+    target = np.array([[0, 0], [0, 1000], [1000, 1000], [1000, 0]])
+
+    start2 = datetime.datetime.now()
     re = getQOut(dic, target, shape)
+    end2 = datetime.datetime.now()
+    print('比较重叠费时%fs:' % ((end2 - start2).seconds + (((end2 - start2).microseconds) / 1e6)))
+
+    end3 = datetime.datetime.now()
+    print('此图片处理时间%fs:' % ((end3 - start3).seconds + (((end3 - start3).microseconds) / 1e6)))
+
     print(re)
 
 end = datetime.datetime.now()
