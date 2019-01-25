@@ -413,22 +413,31 @@ def getQOut(ptdic, target, shape):
         m1 = []
         for key in ['no-TFT-1', 'no-TFT-2', 'no-TFT-3']:
             m1.append(ptdic[key][i])
+    start = datetime.datetime.now()
     if getOverlapping(m1, target, shape):
         sum_m1 += 1
+    end = datetime.datetime.now()
+    print('求重叠共费时%fs:' % (((end - start).microseconds) / 1e6))
 
     for i in range(len(ptdic['Main'])):
         m2 = []
         for key in ['TFT-1', 'TFT-2']:
             m2.append(ptdic[key][i])
+    start = datetime.datetime.now()
     if getOverlapping(m2, target, shape):
         sum_m2 += 1
+    end = datetime.datetime.now()
+    print('求重叠共费时%fs:' % (((end - start).microseconds) / 1e6))
 
     for i in range(len(ptdic['Main'])):
         m = []
         for key in ['Main']:
             m.append(ptdic[key][i])
+        start = datetime.datetime.now()
         if getOverlapping(m, target, shape):
             sum_m += 1
+        end = datetime.datetime.now()
+        print('求重叠共费时%fs:' % (((end - start).microseconds) / 1e6))
 
     return getReturn(sum_m1, sum_m2, sum_m)
 
