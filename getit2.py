@@ -370,11 +370,19 @@ def getOverlapping(ptss, target, shape):
     target = cv.fillConvexPoly(im2, target, 1)
     # target = target // 255
 
+    start = datetime.datetime.now()
     img = im1 + target
+    end = datetime.datetime.now()
+    print('矩阵相加费时%fs:' % (((end - start).microseconds) / 1e6))
 
+    start = datetime.datetime.now()
     if (img > 1).any():
+        end = datetime.datetime.now()
+        print('求是否大于1费时%fs:' % (((end - start).microseconds) / 1e6))
         return 1
     else:
+        end = datetime.datetime.now()
+        print('求是否大于1费时%fs:' % (((end - start).microseconds) / 1e6))
         return 0
 
 
