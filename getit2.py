@@ -368,7 +368,6 @@ def getOverlapping(ptss, target, shape):
 
     im2 = np.zeros(shape, dtype=np.uint8)
     target = cv.fillConvexPoly(im2, target, 1)
-
     # target = target // 255
 
     img = im1 + target
@@ -406,15 +405,15 @@ def getQOut(ptdic, target, shape):
         m1 = []
         for key in ['no-TFT-1', 'no-TFT-2', 'no-TFT-3']:
             m1.append(ptdic[key][i])
-        if getOverlapping(m1, target, shape):
-            sum_m1 += 1
+    if getOverlapping(m1, target, shape):
+        sum_m1 += 1
 
     for i in range(len(ptdic['Main'])):
         m2 = []
         for key in ['TFT-1', 'TFT-2']:
             m2.append(ptdic[key][i])
-        if getOverlapping(m2, target, shape):
-            sum_m2 += 1
+    if getOverlapping(m2, target, shape):
+        sum_m2 += 1
 
     for i in range(len(ptdic['Main'])):
         m = []
@@ -442,18 +441,15 @@ def getJPG(path, li=0):
 
 
 # -------------------------- 处理指定path下所有图片并展示 --------------------------
-# path = './testp/error/'
-# for i in getJPG(path):
+# path = './testp/'
+# for i in getJPG(path, li=1):
 #     start = datetime.datetime.now()
-#     dic = getCoordinate(cv.imread(i), showimg=1, showparam=cv.WINDOW_NORMAL)
+#     dic = getCoordinate(cv.imread(os.path.join(i[0], i[1])), showimg=0, getimg=1)
 #     end = datetime.datetime.now()
-#     print(i)
+#     name = './testp/output/%s' % i[1]
+#     print(name)
+#     cv.imwrite(name, dic[1])
 #     print('    本次匹配费时%fs:' % (((end - start).microseconds) / 1e6))
-#     cv.waitKey(0)
-#     cv.destroyAllWindows()
-
-# cv.waitKey(0)
-# cv.destroyAllWindows()
 
 
 # -------------------------- 处理指定图片并展示 --------------------------
